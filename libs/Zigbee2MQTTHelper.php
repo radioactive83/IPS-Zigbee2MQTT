@@ -462,7 +462,14 @@ trait Zigbee2MQTTHelper
                 if (array_key_exists('last_seen', $Payload)) {
                     //Last Seen ist nicht in den Exposes enthalten, deswegen hier.
                     $this->RegisterVariableInteger('Z2M_LastSeen', $this->Translate('Last Seen'), '~UnixTimestamp');
-                    $this->SetValue('Z2M_LastSeen', ($Payload['last_seen'] / 1000));
+                    if (is_numeric($Payload['last_seen'])) {
+                        $this->SetValue('Z2M_LastSeen', ($Payload['last_seen'] / 1000));
+                    } else {
+                        $date = date_create_immutable_from_format(DATE_RFC3339_EXTENDED, $Payload['last_seen']);
+                        if ($date) {
+                            $this->SetValue('Z2M_LastSeen', $date->getTimestamp());
+                        }
+                    }
                 }
                 if (array_key_exists('boost_heating', $Payload)) {
                     switch ($Payload['boost_heating']) {
